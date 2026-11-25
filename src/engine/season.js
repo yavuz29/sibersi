@@ -19,6 +19,12 @@ function apply(tbl,h,a,hg,ag,s=1){
 }
 export function addStats(st,m,s){m.events.forEach(e=>{if(e.type!=='goal')return;const t=e.home?m.h:m.a
   const a=(id,n,k)=>{if(id==null)return;const x=st[id]||(st[id]={n,t,g:0,a:0});x[k]+=s;x.t=t};a(e.pid,e.sn,'g');a(e.aid,e.an,'a')})}
+export function liveTable(g,l,min){
+  const table=structuredClone(g.leagues[l].table),rs=g.results.filter(r=>r.lg===l)
+  rs.forEach(r=>apply(table,r.h,r.a,r.hg,r.ag,-1))
+  rs.forEach(r=>{const c=h=>r.events.filter(e=>e.type==='goal'&&e.home===h&&e.min<=min).length;apply(table,r.h,r.a,c(true),c(false))})
+  return table
+}
 export function fixMatch(g,i,res){
   const o=g.results[i],L=g.leagues[o.lg],table=structuredClone(L.table)
   apply(table,o.h,o.a,o.hg,o.ag,-1);apply(table,o.h,o.a,res.hg,res.ag)

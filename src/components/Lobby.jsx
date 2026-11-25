@@ -14,7 +14,7 @@ export default function Lobby({onStart,onResume,onTV}){
   const newCode=()=>{const c=Math.random().toString(36).slice(2,6).toUpperCase();setCode(c);push(c,'mode','normal').catch(()=>{})}
   const list=Object.values(players),inp="w-full bg-zinc-800 p-2 rounded"
   return <div className="max-w-xl mx-auto p-4 space-y-3">
-    <h1 className="text-3xl font-bold">⚽ Cyberfoot 2026</h1>
+    <div className="grass rounded-2xl p-6 text-center border-2 border-white/40 shadow-xl"><div className="text-5xl">⚽</div><h1 className="text-4xl font-extrabold tracking-wide drop-shadow">CYBERFOOT 2026</h1><div className="text-emerald-100 text-sm">4. Ligden Süper Lig'e · 4 kişilik menajerlik</div></div>
     {localStorage['cf-save']&&<button className="w-full bg-amber-600 p-2 rounded" onClick={onResume}>Kayıtlı oyuna devam et</button>}
     <Card className="space-y-2"><input className={inp} value={name} onChange={e=>setName(e.target.value)} placeholder="Menajer adı"/>
       <select className={inp} value={team} onChange={e=>setTeam(+e.target.value)}>{teams.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select>
