@@ -12,9 +12,9 @@ export default function Market({g,setG,notify}){
   const mk=(t,p,price,x={})=>({p,tid:t.id,from:t.name,lg:t.league,price,...x})
   let rows=[]
   if(mode==='club')rows=ai.flatMap(t=>t.players.filter(p=>!p.loanOf).map(p=>mk(t,p,p.value)))
-  if(mode==='loan')rows=ai.flatMap(t=>t.players.filter(p=>!p.loanOf).map(p=>mk(t,p,Math.round(p.value*.15))))
+  if(mode==='loan')rows=ai.flatMap(t=>[...t.players].sort((a,b)=>b.ovr-a.ovr).slice(6).filter(p=>!p.loanOf).map(p=>mk(t,p,Math.round(p.value*.3))))
   if(mode==='free')rows=g.free.map(p=>({p,tid:-1,from:'Serbest',lg:0,price:Math.round(p.value*.3)}))
-  if(mode==='sell')rows=me.players.map(p=>mk(me,p,Math.round(p.value*.7)))
+  if(mode==='sell')rows=me.players.map(p=>mk(me,p,Math.round(p.value*.6)))
   if(mode==='friends')rows=g.teams.filter(t=>t.human&&t.id!==g.me).flatMap(t=>t.players.map(p=>mk(t,p,p.value,{to:t.id})))
   const has=v=>v!==''
   rows=rows.filter(r=>(!f.pos||r.p.pos===f.pos)&&(!f.lg||r.lg===f.lg)&&(!has(f.amin)||r.p.age>=f.amin)&&(!has(f.amax)||r.p.age<=f.amax)&&(!has(f.omin)||r.p.ovr>=f.omin)&&(!has(f.pmax)||r.price<=f.pmax*1000)&&(!f.q||r.p.name.toLowerCase().includes(f.q.toLowerCase())))
@@ -26,7 +26,7 @@ export default function Market({g,setG,notify}){
     else{setG(logAdd(applyOp(g,o),text));notify(text,type)}
   }
   const ask=(title,lines,fn)=>setConf({title,lines,fn})
-  const reserve=n=>Math.round(n.r.p.value*(1.05+.25*rng(n.r.p.id*17+g.week*3+g.season)()))
+  const reserve=n=>Math.round(n.r.p.value*(1.05+.25*rng(n.r.p.id*17+g.week*3+g.season)())*(1+.4*Math.max(0,me.league-n.r.lg)))
   const accept=o=>{const p=neg.r.p;if(o>me.budget||full)return;commit({pid:p.id,to:g.me,fee:o},`✅ ${p.name} satın alındı (${K(o)})`);setNeg(null)}
   const offer=()=>{const o=Math.round(+neg.offer*1000),res=reserve(neg)
     if(neg.locked)return
@@ -48,7 +48,8 @@ export default function Market({g,setG,notify}){
     else if(mode==='free')ask('Serbest oyuncu',[`${p.name} · güç ${p.ovr} · ${p.age} yaş`,`İmza bedeli ${K(r.price)} · Kasa ${K(me.budget)} → ${K(me.budget-r.price)}`],()=>commit({pid:p.id,to:g.me,fee:r.price},`✍️ ${p.name} imzaladı (${K(r.price)})`))
     else if(mode==='sell')openBids(r)
     else{const oid=Date.now().toString(36);push(g.room,`offers/${oid}`,{id:oid,from:g.me,to:r.to,pid:p.id,fee:(+fee[p.id]||r.price/1000)*1000,pn:p.name});notify(`📨 Teklif gönderildi: ${p.name}`,'wait')}}
-  const why=r=>mode==='sell'||mode==='friends'?'':full?'Kadro dolu':(mode!=='club'&&me.budget<r.price)?'Kasa yetmez':''
+  const CAP=[0,99,80,72,66],loans=me.players.filter(p=>p.loanOf!=null).length,refuse=r=>r.p.ovr>CAP[me.league]
+  const why=r=>mode==='sell'||mode==='friends'?'':full?'Kadro dolu':refuse(r)?'Bu ligde oynamaz':(mode==='loan'&&loans>=2)?'Max 2 kiralık':(mode!=='club'&&me.budget<r.price)?'Kasa yetmez':''
   const lbl={club:'Pazarlık',loan:'Kirala',free:'İmzala',sell:'Teklif iste',friends:'Teklif'}[mode],sl="bg-zinc-800 rounded p-1 text-sm",inp="bg-zinc-800 rounded p-1 w-16 text-sm"
   const set=(k,v)=>setF({...f,[k]:v})
   const mine=Object.entries(pend).filter(([id,t])=>t.week===g.week&&t.season===g.season&&!(g.applied||[]).includes(id)&&(t.to===g.me||me.players.some(p=>p.id===t.pid)))

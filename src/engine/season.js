@@ -1,6 +1,7 @@
 import {simulate,rng} from './matchEngine'
 import {finance,mood,sackCheck} from './economy'
 import {toty} from './toty'
+import {playerValue} from '../data/leagues'
 import {CUP_WEEKS,playCup,newCup} from './cup'
 export function roundRobin(ids){
   const n=ids.length,a=[...ids],rounds=[]
@@ -61,9 +62,9 @@ export function endSeason(g){
   for(const lg of [2,3,4]){const t=tab[lg];[...t.slice(0,2),playoff(g,t.slice(2,6),g.season*13+lg)].forEach(id=>move[id]=lg-1)}
   for(const lg of [1,2,3])tab[lg].slice(-3).forEach(id=>move[id]=lg+1)
   const gone=[];const teams=g.teams.map(t=>{const r=rng(g.season*77+t.id),base=t.players.reduce((s,p)=>s+p.ovr,0)/t.players.length
-    const youth=[0,1].map(k=>({id:t.id*100+20+g.season*2+k,name:'Akademi '+(g.season*2+k),pos:['DEF','MID','FWD','GK'][Math.floor(r()*4)],age:16+Math.floor(r()*2),ovr:Math.round(base-12+r()*8),value:50000,contract:3}))
+    const youth=[0,1].map(k=>({id:100000+g.season*1000+t.id*2+k,name:'Akademi '+(g.season*2+k),pos:['DEF','MID','FWD','GK'][Math.floor(r()*4)],age:16+Math.floor(r()*2),ovr:Math.round(base-12+r()*8),value:50000,contract:3}))
     const src=t.human?t.players.filter(p=>{const k=(p.contract||2)>1;if(!k)gone.push(p);return k}):t.players
-    const pl=[...src.map(p=>({...p,contract:t.human?(p.contract||2)-1:((p.contract||2)<=1?3:(p.contract||2)-1),age:p.age+1,inj:0,fit:100,ovr:Math.max(30,Math.min(95,p.ovr+(p.age<22?2:p.age>30?-2:0)))})),...youth].sort((a,b)=>b.ovr-a.ovr).slice(0,26)
+    const pl=[...src.map(p=>({...p,contract:t.human?(p.contract||2)-1:((p.contract||2)<=1?3:(p.contract||2)-1),age:p.age+1,inj:0,fit:100,ovr:Math.max(30,Math.min(95,p.ovr+(p.age<22?2:p.age>30?-2:0)))})),...youth].map(p=>({...p,value:playerValue(p)})).sort((a,b)=>b.ovr-a.ovr).slice(0,26)
     return {...t,sacked:false,fanA:Math.round((t.fanA??20)*.6),boardA:Math.round((t.boardA??20)*.6),league:move[t.id]??t.league,players:pl}})
   const loans=teams.flatMap(t=>t.players.filter(p=>p.loanOf!=null).map(p=>({p,from:t.id})))
   loans.forEach(({p,from})=>{teams[from].players=teams[from].players.filter(x=>x.id!==p.id);teams[p.loanOf].players=[...teams[p.loanOf].players,{...p,loanOf:undefined}]})

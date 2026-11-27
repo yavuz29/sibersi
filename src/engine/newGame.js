@@ -1,4 +1,4 @@
-import {buildTeams,freeAgents} from '../data/leagues'
+import {buildTeams,freeAgents,playerValue} from '../data/leagues'
 import {newLeagueState} from './season'
 import {newCup} from './cup'
 export function newGame(humans,room,tv,myPid){
@@ -6,3 +6,4 @@ export function newGame(humans,room,tv,myPid){
   const mine=humans.find(h=>h.id===myPid)||humans[0]
   return {teams,season:1,week:0,room,tv:!!tv,me:mine.team,humans,results:[],free:freeAgents(),cup:newCup(teams),applied:[],leagues:Object.fromEntries([1,2,3,4].map(l=>[l,newLeagueState(teams,l)]))}
 }
+export const migrate=g=>({...g,teams:g.teams.map(t=>({...t,players:t.players.map(p=>({...p,value:playerValue(p)}))})),free:(g.free||[]).map(p=>({...p,value:playerValue(p)}))})

@@ -16,3 +16,5 @@ Ek: kırmızı kart etkisi, oyuncu maaşı/serbest bırakma, online işlemler ha
 ## Oda kodu + TV modu
 `src/firebaseConfig.js` dosyasına Firebase config'ini bir kez yapıştır; oyuncular sadece oda kodu girer. Normal mod: herkes kendi ekranında. TV modu: TV'de "Bu cihazı TV yap", telefonlar TV'deki kodla girer, maçlar TV'de oynanır.
 Online: biri taktik/değişiklik/penaltı için durdurunca tüm oyuncuların maçı durur, aynı dakikadan devam eder.
+## Gerçek oyuncular
+`src/data/players.csv` dosyasına `takım;isim;mevki;yaş;güç` satırları ekle (takım adı listedekiyle aynı olmalı). Dosyada oyuncusu olan takımlar bu oyuncularla kurulur, diğerleri otomatik üretilir. Dosya projeyle yayınlandığı için tüm oyuncularda aynıdır.

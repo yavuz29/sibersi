@@ -1,10 +1,10 @@
 import {useState,useEffect} from 'react'
-import {simulate,rng,power} from '../engine/matchEngine'
+import {simulate,rng,power,slots} from '../engine/matchEngine'
 import {sfx} from '../engine/sound'
 import {Badge,Card,Crest} from '../ui'
 const A=['Çok defansif','Defansif','Dengeli','Ofansif','Çok ofansif']
 export default function MatchDay({g,m,idx,tac,setTac,onFix,onEnd,tv,gpause,pmin,pby,onPause,otacs,onMin}){
-  const mine=!tv&&(m.h===g.me||m.a===g.me),home=m.h===g.me,P=id=>g.teams[g.me].players.find(p=>p.id===id)
+  const mine=!tv&&(m.h===g.me||m.a===g.me),home=m.h===g.me,P=id=>g.teams[g.me].players.find(p=>p.id===id),S=tac?slots(tac.form):[]
   const sp=2
   const [min,setMin]=useState(0),[pause,setPause]=useState(false),[panel,setPanel]=useState(false),[subs,setSubs]=useState(0),[out,setOut]=useState(0),[inn,setInn]=useState(11),[pen,setPen]=useState(null),[flash,setFlash]=useState(null)
   useEffect(()=>{setMin(0);setSubs(0);setPause(false);setPanel(false);setPen(null)},[g.week,m.h])
@@ -49,8 +49,8 @@ export default function MatchDay({g,m,idx,tac,setTac,onFix,onEnd,tv,gpause,pmin,
         return <div className="space-y-1">{Bar('Hücum',a.att,b.att)}{Bar('Savunma',a.def,b.def)}<div className="text-[11px] text-zinc-400">Yeşil = senin gücün, kırmızı = rakip. Her değişiklikte bu değerler güncellenir ve maçın <b>kalan dakikaları</b> yeni güçlerle yeniden hesaplanır (geçmiş goller değişmez). Olay akışında mavi 🔄 satırı görürsün.</div></div>})()}
       <div className="flex flex-wrap gap-1"><select className={sel} value={tac.mentality} onChange={e=>apply({...tac,mentality:+e.target.value},'Oyun anlayışı: '+A[+e.target.value+2])}>{A.map((x,i)=><option key={x} value={i-2}>{x}</option>)}</select>
         {[['press','Baskı',['Yok','Orta','Yüksek']],['pass','Pas',['Kısa','Karışık','Uzun']],['aggr','Agresiflik',['Düşük','Orta','Yüksek']]].map(([k,l,o])=><select key={k} className={sel} value={tac[k]??1} onChange={e=>apply({...tac,[k]:+e.target.value},l+': '+o[+e.target.value])}>{o.map((x,i)=><option key={x} value={i}>{l}: {x}</option>)}</select>)}</div>
-      <div>Değişiklik ({subs}/3): <select className={sel} value={out} onChange={e=>setOut(+e.target.value)}>{tac.order.slice(0,11).map((id,i)=><option key={id} value={i}>{P(id).name} ({Math.round(P(id).fit??100)}%)</option>)}</select> → <select className={sel} value={inn} onChange={e=>setInn(+e.target.value)}>{tac.order.slice(11,18).map((id,i)=><option key={id} value={i+11}>{P(id).name} ({P(id).pos})</option>)}</select>
-        <button disabled={subs>=3} className="bg-sky-700 disabled:opacity-30 px-2 rounded ml-1" onClick={sub}>Değiştir</button></div>
+      <div>Değişiklik ({subs}/3): <select className={sel} value={out} onChange={e=>setOut(+e.target.value)}>{tac.order.slice(0,11).map((id,i)=><option key={id} value={i}>{S[i]} · {P(id).name} (güç {Math.round(P(id).ovr)}, %{Math.round(P(id).fit??100)})</option>)}</select> → <select className={sel} value={inn} onChange={e=>setInn(+e.target.value)}>{tac.order.slice(11,18).map((id,i)=><option key={id} value={i+11}>{P(id).pos} · {P(id).name} (güç {Math.round(P(id).ovr)}, %{Math.round(P(id).fit??100)})</option>)}</select>
+        <button disabled={subs>=3} className="bg-sky-700 disabled:opacity-30 px-2 rounded ml-1" onClick={sub}>Değiştir</button>{tac.order[inn]&&P(tac.order[inn])&&S[out]&&P(tac.order[inn]).pos!==S[out]&&<div className="text-xs text-amber-300 mt-1">⚠️ {S[out]} yerine {P(tac.order[inn]).pos} oynayacak: güç %20 düşer</div>}</div>
       <button className="bg-emerald-700 px-3 py-1 rounded" onClick={()=>{setPanel(false);setPause(false);onPause&&onPause(false,min)}}>▶ Maça devam</button></div>}
   </Card>
 }
